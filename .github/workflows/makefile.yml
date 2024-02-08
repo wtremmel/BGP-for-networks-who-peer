@@ -5,6 +5,9 @@ on:
     tags:
       - v2024-**
 
+permissions:
+  contents: write
+
 jobs:
   build_print:
     runs-on: ubuntu-latest
