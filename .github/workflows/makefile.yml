@@ -21,22 +21,16 @@ jobs:
         with:
           install-modules: "LWP::UserAgent LWP::Protocol::https"
       - run: cat *.tex tex/*.tex | perl get-referenced-rfcs > all-rfcs.bib
-      - name: Upload Bibtex file
+      - name: Compile Latex Document
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: BGP_for_networks_who_peer.tex
+      - name: Upload PDF file
         uses: actions/upload-artifact@v4
         with:
-          name: all-rfcs
-          path: all-rfcs.bib
-
-#      - name: Compile Latex Document
-#        uses: xu-cheng/latex-action@v3
-#        with:
-#          root_file: BGP_for_networks_who_peer.tex
-#      - name: Upload PDF file
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: BGP_for_networks_who_peer
-#          path: BGP_for_networks_who_peer.pdf
-#      - name: Release
-#        uses: softprops/action-gh-release@v1
-#        with:
-#          files: BGP_for_networks_who_peer.pdf
+          name: BGP_for_networks_who_peer
+          path: BGP_for_networks_who_peer.pdf
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: BGP_for_networks_who_peer.pdf
