@@ -17,7 +17,7 @@ jobs:
         with:
           root_file: BGP_for_networks_who_peer.tex
       - name: Upload PDF file
-        uses: actions/upload-artivact@v3
+        uses: actions/upload-artifact@v3
         with:
           name: PDF
           path: BGP_for_networks_who_peer.pdf
