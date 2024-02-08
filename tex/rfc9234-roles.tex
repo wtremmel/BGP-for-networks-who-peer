@@ -1,0 +1,40 @@
+\section{\rfc{9234} on preventing accidential floods}
+\subsection{Roles}
+This RFC defines eBGP - \emph{roles} which can be applied to each peering session. 
+Note that the own (local) role is configured only (which might be different on each session, like a the own AS can be a \emph{Customer} to one peer and a \emph{Provider} to another peer).
+The following roles are defined, the descriptions reflect that the local role is set:
+\begin{itemize}
+  \item \emph{Provider}: My AS is a transit provider for the remote AS, I may announce any prefix to it.
+  \item \emph{Customer}: My AS is a transit customer of the remote AS, I only announce  prefixes learned from my own \emph{Customer}s or my own prefixes.
+  \item \emph{Peer}: My AS and the remote AS are peers, I announce only  prefixes learned from my own \emph{Customer}s or my own prefixes.
+  \item \emph{Route Server}: My AS is a route server, I may announce any prefix to a remote \emph{Route Server Client}
+  \item \emph{Route Server Client}: My AS is a route server client, the remote AS is a \emph{Route Server}. I only announces  prefixes learned from my own \emph{Customer}s or my own prefixes.
+\end{itemize}
+
+These roles are applied to eBGP sessions.  Rhe eBGP session will not be established unless the pairing of roles is valid. The following pairs of roles are considered to be valid:
+\begin{itemize}
+  \item Provider $\longleftrightarrow$ Customer
+  \item Route Server $\longleftrightarrow$ Route Server Client
+  \item Peer $\longleftrightarrow$ Peer
+\end{itemize}
+
+If you enable \emph{strict} checking, the session will also not come up if the remote side has set no role, \emph{loose} check still prevents invalid pairs, but the session will come up if the remote side has not configured any role.
+
+\subsection{\emph{Only to customer} (OTC) Attribute}
+This is an optional (it does not have to be there) and transitive (it is forwarded via eBGP to other ASes) \gls{BGP Attribute} of a BGP prefix.
+Purpose is to enforce a ``common sense'' BGP announcement policy: Announce BGP prefixes received from peers, transit or route servers only to customers.
+
+The OTC attribute is set according to the following rules:
+\begin{itemize}
+  \item if a route is received \emph{without} OTC from a peer, transit provider or route server, OTC is added with the AS number of that peer or transit provider or route server.
+  \item if a route is advertised and OTC is not present, add OTC with your local AS number.
+\end{itemize}
+Once the OTC attribute is set, it must remain unchanged.
+
+For all routes with OTC present, the checking occurs using these rules. Routes should be dropped (considered being route leaks), if
+\begin{itemize}
+  \item received from a customer or route server client. Rationale: OTC means `only to customers' and in this case you are a transit provider (or a route server).
+  \item received from a peer and the AS number set in OTC is different from the peers AS number (that means that some other AS than your peer has set OTC).
+\end{itemize}
+
+Also, if OTC is set, you must not advertise the route to any transit provider, peers or route servers.

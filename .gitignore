@@ -1,0 +1,24 @@
+all-rfcs.bib
+*.pdf
+"!BGP for networks who peer.pdf"
+.DS_Store
+*.acn
+*.acr
+*.swp
+*.alg
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fls
+*.glg
+*.fdb*
+*.glo
+*.gls
+*.ist
+*.log
+*.out
+*.xml
+*.gz
+*.toc
+*.xwm

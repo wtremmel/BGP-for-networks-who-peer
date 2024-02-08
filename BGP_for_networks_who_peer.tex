@@ -1,0 +1,140 @@
+% !BIB program = biber
+\ifdefined\paperversion
+\documentclass[a4paper,titlepage,twoside,openright]{report}
+\else
+\documentclass[a4paper,titlepage]{report}
+\fi
+\usepackage[utf8]{inputenc}
+% Default looks better
+% \usepackage[a4paper,top=2cm,bottom=2cm,inner=2.5cm,outer=6cm]{geometry}
+% Font FiraSans - see http://www.tug.dk/FontCatalogue/firasansnewtxsf/
+\usepackage[T1]{fontenc}
+\usepackage[sfdefault,scaled=.85]{FiraSans}
+\usepackage{newtxsf}
+\usepackage{verbatim}
+%
+% Watermark - remove when complete
+\usepackage{draftwatermark}
+\SetWatermarkText{Draft}
+\SetWatermarkScale{0.2}
+%
+% showframe - comment out usually
+%\usepackage{showframe}
+%
+\ifdefined\paperversion
+\usepackage[pdftex,
+  pdftitle={BGP for networks who peer},
+  pdflang={en-US},
+  pdfauthor={Wolfgang Tremmel},
+  pdfcreator={DE-CIX Academy},
+  pdfsubject={BGP},
+  pdfdisplaydoctitle=true,  hidelinks
+%
+% For printing,   hidelinks
+% For online,   % hidelinks
+%
+%  hidelinks
+  ]{hyperref}
+\else
+\usepackage[pdftex,
+  pdftitle={BGP for networks who peer},
+  pdflang={en-US},
+  pdfauthor={Wolfgang Tremmel},
+  pdfcreator={DE-CIX Academy},
+  pdfsubject={BGP},
+  pdfdisplaydoctitle=true, % hidelinks
+%
+% For printing,   hidelinks
+% For online,   % hidelinks
+%
+%  hidelinks
+  ]{hyperref}
+\fi
+\usepackage[acronym,toc]{glossaries}
+\usepackage{parskip}
+\usepackage{stackengine}
+\usepackage{scalerel}
+\usepackage{graphicx}
+\usepackage{tabularx}
+\usepackage{tabu}
+\usepackage{float}
+\usepackage{eso-pic}
+\usepackage{datetime}
+\newdateformat{monthyear}{\monthname~\THEYEAR}
+\usepackage{csquotes}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+\definecolor{lgray}{gray}{0.9}
+\usepackage[backend=biber,style=alphabetic,sorting=ynt]{biblatex}
+\addbibresource{all-rfcs.bib}
+\addbibresource{references.bib}
+\floatstyle{boxed}
+\restylefloat{figure}
+\graphicspath{{img/}{img/Drawings}}
+\newcommand\dangersign[1][2ex]{\renewcommand\stacktype{L}\scaleto{\stackon[0.5pt]{\color{red}$\triangle$}{\tiny !}}{#1}}
+\newcommand{\ip}[1]{\texttt{#1}}
+\newcommand{\rfc}[1]{\cite{rfc#1}}
+% Front page picture
+\newcommand\TitlePic{%
+\put(0,0){%
+\parbox[b][\paperheight]{\paperwidth}{%
+\vfill
+\centering
+\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio,page=2]{./img/Titel_BGP_Lay.pdf}%
+\vfill
+}}}
+\makeglossaries
+\input{Glossary.tex}
+\newcounter{experiment}
+\setcounter{experiment}{1}
+%
+\begin{document}
+\frenchspacing
+%
+\pagestyle{fancyplain}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyhf{}
+\fancyhf[HLO,HRE]{\leftmark}
+\fancyhf[HRO,FRO,HLE,FLE]{\thepage}
+\fancyhf[FRE,FLO]{\includegraphics[height=\baselineskip,pagebox=artbox]{./img/DE-CIX_Logo_2016_pantone.pdf} Academy}
+\fancyhf[FCE,FCO]{BGP for networks who peer}
+%
+%\title{\fontsize{1.3cm}{1.4cm}\selectfont {\bfseries\itshape BGP for networks who peer}}
+%\author{\href{mailto:wolfgang.tremmel@de-cix.net}{Wolfgang Tremmel} \\
+%\href{mailto:academy@de-cix.net}{DE-CIX Academy}}
+\AddToShipoutPicture*{\TitlePic}
+%\maketitle
+%
+\begin{titlepage}
+\vspace*{6.5cm}
+\hspace*{0.5cm}
+\mbox{\fontsize{1.3cm}{1.4cm}\selectfont {\bfseries\itshape BGP for networks who peer}}\\
+\vspace*{1cm}
+\hspace*{0.5cm}
+\mbox{\fontsize{0.7cm}{0.8cm}\selectfont {\bfseries\itshape Wolfgang Tremmel, DE-CIX Academy, \monthyear\today  }}
+\end{titlepage}
+
+\tableofcontents
+
+
+\input{tex/Introduction}
+\input{tex/IGP-Setup}
+\input{tex/iBGP}
+\input{tex/eBGP-Intro}
+\input{tex/Multihoming}
+\input{tex/BestPathSelection}
+\input{tex/Communities}
+% \input{tex/IPv6}
+%\input{tex/CompleteExample}
+\input{tex/TrafficEngineering}
+\input{tex/Security}
+\input{tex/BGPAdvanced}
+\appendix
+\input{tex/acknowledgements}
+%\input{tex/CompleteConfigs}
+\glsaddall
+\printglossaries
+\printbibliography
+\chapter{License}
+\verbatiminput{LICENSE}
+\end{document}

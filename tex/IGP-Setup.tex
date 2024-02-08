@@ -1,0 +1,222 @@
+%!TEX root = ../BGP_for_networks_who_peer.tex
+\chapter{Setting up an \gls{IGP}}
+\section{Motivation}
+\gls{BGP} never runs alone. To distribute the IP addresses of interfaces
+within an \gls{AS}, an \glsreset{IGP}\gls{IGP} is needed.
+
+There are several options which \gls{IGP} to use, but normally you will not be free
+to choose. Either someone has already made the decision, or you are restricted
+on what your router vendor supports.
+
+If you really have several options, keep in mind the following points when
+making your decision:
+\begin{description}
+  \item[Openness:] The IGP must be supported not only by the routers you are using currently, but also by the routers you are purchasing over the next few years.
+  \item[IPv6 awareness:] Even if you are currently not using IPv6, you will some time in the future. Your IGP should either support IPv6 or you should be able to run a 2nd IGP in parallel for IPv6.
+\end{description}
+
+\section{Configuring OSPF}
+\gls{OSPF} runs on top of IP. So you need to configure IP addresses for your
+interfaces, and then define the use of OSPF on these IPs. It really helps
+if you have all your interface IP addresses out of the same network block
+(and use this block for nothing else).
+
+Also, OSPF has the concept of \emph{areas}: You have to define at least one area, called either backbone or area 0 (zero).
+
+Example (Cisco):\label{example-ospf}
+\begin{verbatim}
+interface GigabitEthernet1/0
+ ip address 192.168.2.2 255.255.255.252
+!
+router ospf 64500
+ network 192.168.2.0 0.0.0.255 area 0
+\end{verbatim}
+
+This would switch on OSPF on all interfaces with an IP address within 192.168.2.0/24.
+
+Same example for Mikrotik routers:
+\begin{verbatim}
+/ip address
+add address=192.168.2.2/30 interface=ether1 network=192.168.2.0
+
+/routing ospf network
+add area=backbone network=192.168.2.0/24
+\end{verbatim}
+
+Same example for FRRouting software router:
+\begin{verbatim}
+interface wlan0.101
+  ip address 192.168.2.2/30
+!
+router ospf
+  network 192.168.2.2/30 area 0
+\end{verbatim}
+
+On Juniper you enable OSPF on the interfaces:
+\begin{verbatim}
+  interfaces {
+      em0 {
+          unit 0 {
+              family inet {
+                  address 192.168.2.2/30;
+              }
+          }
+      }
+  }
+  protocols {
+    ospf {
+      area 0.0.0.0 {
+        interface em0.0;
+      }
+    }
+  }
+\end{verbatim}
+
+Keep in mind that OSPFv2 (the ``standard'' OSPF version) supports IPv4 only. This is completely fine; for IPv6 you can use OSPFv3 to keep things separate. Or you can run IS-IS which supports IPv4 and IPv6.
+
+\section{Configuring IS-IS}
+\gls{IS-IS} does not run on top of IP but runs directly on layer 2 (Ethernet or other). So you do not have to define the network it runs on, but the interfaces you want it enabled on.
+
+\emph{Important}: The protocols you enable it for must be the same on both sides of a connection. So if you enable IS-IS for IPv4 and IPv6 on one interface, you must do so as well on the connected interface.
+
+Example for IS-IS on Cisco:
+\begin{verbatim}
+interface GigabitEthernet0/0
+  ip address 192.168.2.2 255.255.255.252
+  ipv6 address autoconfig
+  ip router isis
+  ipv6 router isis
+!
+router isis
+  net 49.0000.0000.0000.0001.00
+\end{verbatim}
+The number behind the ``net'' statement is the router-id and must be unique within your network.
+
+Mikrotik does not support IS-IS.
+
+Example for IS-IS on FRRouting:
+\begin{verbatim}
+router isis myname
+  net 49.0000.0000.0000.0001.00
+!
+interface eth1
+  ip address 192.168.2.2/30
+  ipv6 address autoconfig
+  ip router isis myname
+  ipv6 router isis myname
+\end{verbatim}
+
+Example for IS-IS on Juniper is a little bit more complex. For the loopback interface \emph{lo0} we configure a static IPv6 address, for the ethernet interface we use auto-configuration. Also, the router-id goes into the loopback interface and \emph{family iso} has to be enabled on all interfaces where IS-IS is to be used.
+\begin{verbatim}
+  interfaces {
+      em0 {
+          unit 0 {
+              family inet {
+                  address 192.168.2.2/30;
+              }
+              family iso;
+              family inet6;
+          }
+      }
+      lo0 {
+          unit 0 {
+              family inet {
+                  address 192.168.1.3/32;
+              }
+              family inet6 {
+                address 2001:db8:500::1:3/128;
+              }
+              family iso {
+                  address 49.0000.0000.0000.0003.00;
+              }
+          }
+      }
+  }
+  protocols {
+    isis {
+        interface em0.0;
+        interface lo0.0;
+    }
+\end{verbatim}
+
+
+\section{Configuring OSPFv3}
+To integrate IPv6 a new version of OSPF was necessary - this came into being as OSPFv3. Except for virtual links, OSPFv3 uses IPv6 link-local addressing. It is configured on the interface, not on a network like OSPFv2.
+
+The only remains of 32bits are area and router ids - they are still 32bit like IPv4 addresses.
+
+Example for OSPFv3 on Cisco IOS:
+\begin{verbatim}
+interface Loopback0
+  ipv6 address 2001:DB8:500::1:3/128
+  ipv6 ospf 64500 area 0
+!
+interface GigabitEthernet0/0
+  ipv6 address autoconfig
+  ipv6 ospf 64500 area 0
+\end{verbatim}
+In this example, \emph{64500} is the process id of the OSPFv3 process - you can choose any number. It is not even necessary to define the process itself - simply enable OSPv3 on all interfaces where you want to use it. Whether you want to use auto-configured IPv6 addresses on your link interfaces or static IPv6 addresses is up to you.
+
+Example for Mikrotik:
+\begin{verbatim}
+/ipv6 address
+  add address=2001:DB8:500::1:1/128 interface=loopback0
+  add interface=ether0 address=2001:DB8:496::1:2/126
+
+/routing ospf-v3 interface
+  add area=backbone interface=loopback0
+  add area=backbone interface=ether0
+\end{verbatim}
+
+Example for FRRouting:
+\begin{verbatim}
+router ospf6
+  router-id 192.168.1.1
+  interface dummy0 area 0.0.0.0
+  interface eth1 area 0.0.0.0
+  interface eth2 area 0.0.0.0
+\end{verbatim}
+You have to configure an (IPv4-like) router-id manually - the best approach is to use the IPv4 address of your Loopback interface. Also the area notation is written like an IPv4 address.
+
+Example for Juniper:
+\begin{verbatim}
+  protocols {
+    ospf3 {
+        area 0.0.0.0 {
+            interface lo0.0;
+            interface em0.0;
+        }
+    }
+  }
+\end{verbatim}
+
+\iffalse % ---------------- do not print ----------------------
+
+\section{Experiment 1a, 1b and 1c: Setup IGP}
+Please see separate experiment documentation.
+
+\section{Experiment \theexperiment}
+\subsection{Network Setup}
+Network is a ring-shaped network out of all participants' routers (see
+picture \ref{fig:exp1}).
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{img/i-wt-BGP-Raspi-Experiment01-iBGP-01.png}
+  \caption{Experiment 1 - Setting up an IGP}
+  \label{fig:exp1}
+\end{figure}
+
+\subsection{Task}
+To complete this experiment, you must:
+\begin{itemize}
+  \item Configure your assigned loopback IP address on your router
+  \item Configure \gls{OSPF} on your router so it talks to its neighbors
+  \item Redistribute your loopback address via OSPF. Use
+  \begin{verbatim}
+    redistribute connected subnets
+  \end{verbatim}
+  for this.
+  \item See the other routers loopback addresses in your routing table.
+\end{itemize}
+
+\fi % ------------------------------------

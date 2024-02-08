@@ -1,0 +1,48 @@
+#!/usr/bin/perl
+#
+#
+use utf8;
+use Getopt::Std;
+
+$| = 1;
+
+getopts('p');
+
+while (<>) {
+  my @words = split(/ /);
+  foreach $word (@words) {
+    $word =~ /rfc\{(\d+)/ && ($rfc{$1} = 1);
+    $word =~ /rfc(\d+)/ && ($rfc{$1} = 1);
+    $word =~ /RFC(\d+)/ && ($rfc{$1} = 1);
+  }
+}
+
+$baseurl = 'http://datatracker.ietf.org/doc/rfc%d/bibtex/';
+
+use LWP::UserAgent ();
+my $ua = LWP::UserAgent->new;
+$ua->ssl_opts( verify_hostname => 0 );
+
+foreach $thisrfc (sort {$a <=> $b} keys %rfc) {
+  if ($opt_p) {
+    print "$thisrfc\n";
+    next;
+  }
+
+  my $thisurl = sprintf $baseurl,$thisrfc;
+  my $response = $ua->get($thisurl);
+  if ($response->is_success) {
+    my $thistext = $response->decoded_content;
+    $thistext =~ s/\@misc/\@techreport/;
+    $thistext =~ s/number =/shorthand = {RFC$thisrfc},\n        number =/;
+    $thistext =~ s/%.*\n//g;
+    my $origtext = $thistext;
+    utf8::encode($thistext);
+    print $thistext;
+    if ( $thistext ne $origtext ) {
+      print "% Previous entry was converted to UTF-8\n";
+    }
+  } else {
+    print "% Could not get RFC$thisrfc:" . $response->status_line . "\n";
+  }
+}

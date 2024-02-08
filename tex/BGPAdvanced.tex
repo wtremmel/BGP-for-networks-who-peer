@@ -1,0 +1,68 @@
+%!TEX root = ../BGP_for_networks_who_peer.tex
+\chapter{BGP - Advanced Concepts}
+\label{ch:advanced}
+\section{BGP Confederations}
+\label{se:confederations}
+Scaling BGP for large networks (large in 1000s of BGP speaking routers) is hard. Although eBGP runs all of the Internet on millions of devices, an Autonomous System, as we know, has to:
+\begin{itemize}
+  \item Be continuous. All routing elements interconnect with each other.
+  \item Run either:
+  \begin{itemize}
+    \item iBGP between its BGP speaking routers fully meshed - with 1000s of routers there are a \emph{lot} of iBGP sessions to be configured and monitored.
+    \item one or more \Glspl{Route Reflector}(see \ref{routereflector}) to distribute prefixes, this also needs careful design so you do not loose redundancy.
+  \end{itemize}
+  \item Have a common management. Although not a formal requirement for an AS, you need to manage your routers somehow and if multiple groups of operators manage a common AS, chaos is ensured.
+\end{itemize}
+
+So when the first global ISPs emerged, a solution was sought to address these issues. From personal experience, I experienced the following network organization:
+\begin{itemize}
+  \item Independent country organizations, running their in-country network.
+  \item An international backbone, run by a central organization (by me).
+\end{itemize}
+Some country networks were members of their local Internet Exchanges, necessary both from a technical and also from a marketing point of view. Also, most country organizations had customers with an Autonomous System of their own. To get better pricing, it was decided that upstream capacity was purchased centrally. So from a technical point of view, before BGP confederations were introduced, the network looked like:
+\begin{itemize}
+  \item Each country was running their own AS, some connecting to local IXPs, some serving customers with AS.
+  \item The backbone was also member of some IXPs, and connected to multiple upstream providers.
+  \item No customers were connected to the backbone, customers were only connected to the in-country networks.
+\end{itemize}
+So the AS path customers received were unnecessary long - two ASes were added instead of one (the AS number of the country network and the AS number of the backbone).
+
+To improve the situation it was decided to migrate the network to a BGP Confederations setup.
+
+How to describe a BGP Confederation? Best picture is kind of small envelopes inside a big envelope - to the outside only the big envelope is visible.
+
+Some terms regarding BGP Confederations:
+\begin{description}
+  \item[Member Autonomous System:] This is an Autonomous System that is contained inside a Confederation - like a small envelope inside a bigger one. It is identified by an AS number (called ``Member AS-Number''), but this AS number is only visible within the Confederation, so most of the time private AS numbers are used here.
+  \item[Confederation Identifier:] This is the AS number visible to the outside (kind of the number on the big envelope). As it is visible in the global routing table, a real public AS number has to be used.
+\end{description}
+
+\subsection{Configuration}
+A typical BGP configuration of a Confederation Member looks like this (FRRouting example):
+\begin{verbatim}
+  router bgp 65501
+   bgp confederation identifier 5669
+   bgp confederation peers 65502 65503 65504 65505
+  !
+\end{verbatim}
+Note that all \emph{Member Autonomous Systems} are listed here except the own one.
+
+Sessions to neighbors are configured like all BGP sessions: With a ``remote AS'' number and an IP address. The routing process knows from the Confederation configuration at the top which ASes are Confederation Members and which are outside of the Confederation.
+
+\subsection{The AS Path}
+The usual handling of the AS path is, when a prefix is announced via eBGP to another AS, the announcing AS is inserting its own AS number at least once at the front of the AS path.
+
+As between Confederation Members eBGP is spoken, the same is true within a Confederation: The announcing ASes number is added to the AS path (at the front).
+
+When announcing a prefix to another AS \emph{outside} of the Confederation the handling is different:
+\begin{itemize}
+  \item All Confederation Member AS numbers are removed from the AS path
+  \item The \emph{Confederation Identifier} (= AS number visible to the outside)  is added to the front of the AS path.
+\end{itemize}
+With this AS path handling, the ``inside'' of a Confederation becomes invisible to outside ASes.
+
+
+\section{BGP as routing-protocol in data centers}
+\label{se:datacenterrouting}
+Disclaimer: The author has never deployed BGP in a pure datacenter scenario, neither operated any production datacenter network. Therefor it is recommended you seek out documentation by authors who have. Please
+see \rfc{7938} and \cite{BGPintheDataCenter}.

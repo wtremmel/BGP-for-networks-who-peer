@@ -1,0 +1,155 @@
+%!TEX root = ../BGP_for_networks_who_peer.tex
+\chapter{BGP best path selection}
+\label{ch:bestpath}
+\section{Motivation}
+In BGP, a router receives prefix announcements via eBGP. If you are multi-homed or peer, you will receive announcements for one and the same prefix from multiple sources. Out of these multiple announcements, a router has to select \emph{one} announcement as \emph{best}. This best prefix announcement will then be used for routing and also propagated further (for the sake of simplicity, in this chapter we will not look at BGP multi-path where more then one announcement is selected).
+
+This decision on which prefix announcement is \emph{best} has to be based on the following criteria:
+\begin{itemize}
+  \item Only one single path for each prefix is needed (and wanted)
+  \item Decision must be based on attributes (of the BGP announcement)
+  \item Decision must be deterministic (with the same parameters the decision is always the same)
+\end{itemize}
+
+In this chapter, we will uncover one by one the attributes best prefix selection is based on and explain the best path selection algorithm.
+
+\section{Best path selection in contrast to routing}
+In best path selection we compare prefix announcements of \emph{the same prefix}, while in routing we select a route for a given destination IP address.
+
+\fcolorbox{black}{lgray}{
+\begin{minipage}{\linewidth}
+  10.3.8.0/22 and 10.3.8.0/24 are not the same prefix. They have a different net-mask and 10.3.8.0/24 is \emph{more specific} (smaller). So no matter what the BGP attributes are, \emph{more specific} always wins (against less specific).
+\end{minipage}
+}
+
+\section{Best path selection algorithm}
+\subsection{Before we start\ldots}
+Before we start selecting the best path, it must be checked if the BGP announcement is valid. Only paths where the \emph{next hop} is reachable by the router which does the best path selection are considered. If the next hop is not reachable the announcement is discarded.
+
+Also discarded are prefixes where the next hop is not reachable through the same interface as the BGP session is on, as well as announcements, which have the same AS as the router itself has, in the AS path.
+
+The following criteria are processed one by one. Announcements are only compared if the prefixes are identical. If no decision is made, the algorithm continues. If a decision is made, the selected prefix is considered ``best'' and processed accordingly (installed in the routing table, forwarded by iBGP and/or eBGP).
+
+The algorithm shown is like one implemented by most router vendors. Some implementations vary and either skip criteria or use additional criteria. Also, some routers allow the algorithm to be ``tweaked''. So, for more details please consult your router vendors documentation.
+
+\subsection{\Gls{LP}}
+\begin{tabular}{r p{\linewidth}}
+Value: & 32-bit integer (0\ldots4294967295) \\
+Better: & higher wins \\
+Usually set: & at network edge by router receiving prefixes \\
+\end{tabular}
+
+Local Preference is the first evaluated attribute in best path selection and therefore can override all the rest. Usually, it is set at the network edge by the receiving router according to your routing policy: Customer prefixes get a very high value (are preferred) while prefixes received from upstream providers get a low value. The policy of how to set Local Preference can be made as simple or as complex as you want.
+
+It is recommended that you do not set anything to the default Local Preference (so if you see the default value of Local Preference in the BGP table, you know that it has not been explicitly set). Never standadized, but the usual default value for Local Preference is 100 (this is also recommended by \rfc{4277}).
+
+Example: If the default Local Preference is 100, you might use 10 for upstream, 1000 for peering, and 10000 for customers.
+
+\subsection{AS path length}
+\begin{tabular}{r p{\linewidth}}
+Value: & an ordered list of AS numbers\\
+Better: & shorter wins \\
+Usually set: & automatically when re-announcing prefixes via eBGP \\
+Mandatory attribute \\
+\end{tabular}
+
+The AS path is built when announcing prefixes via eBGP: The sender's AS number is added to the front of the AS path. So the path grows each time a prefix is forwarded. The length of the AS path (number of AS numbers in the path) is now used as an attribute; a shorter path is considered to be ``better''.
+
+The AS path length does not give any information about geographical distance, length of fibers, or ``quality'' of the path (in terms of congestion or similar). It only shows the number of Autonomous Systems traversed by the BGP announcement. The intention  of the AS path and how it is built was loop prevention (routers do not accept a prefix announcement if they see their own AS number in the AS path).
+
+AS path length comes into effect when \gls{LP} is equal, usually when having two upstream providers or receiving the same prefix from multiple peers.
+
+\subsection{Origin type}
+\begin{tabular}{r p{\linewidth}}
+Value: & IGP, EGP, incomplete\\
+Better: & IGP over EGP over incomplete \\
+Usualy set: & automatically when injecting prefixes into BGP \\
+Mandatory attribute \\
+\end{tabular}
+
+This is a ``historical'' attribute with little to no practical value today. Its purpose was to indicate from which source a prefix was put into BGP:
+\begin{description}
+  \item[IGP] - the prefix was generated statically with an BGP \emph{network} statement
+  \item[EGP] - the prefix was received via \acrfull{EGP}, which is no longer used
+  \item[incomplete] - the prefix was redistributed from another routing protocol (including a static route) into BGP.
+\end{description}
+
+Be aware that the value of this attribute can be overwritten by any BGP speaking router. Some ISPs prefer to overwrite the attribute on all incoming connections.
+
+
+\subsection{\acrfull{MED}}
+\begin{tabular}{r p{\linewidth}}
+Value: & 32-bit integer (0\ldots4294967295)\\
+Better: & lower wins \\
+Usually set: & by prefix announcing router, can be overwritten by receiving router \\
+Optional attribute \\
+\end{tabular}
+
+This attribute was intended for where two networks have more then one connection to signal for the BGP prefix sending (and traffic receiving) network where it prefers incoming traffic for its prefixes. As \gls{MED} can be different for each prefix, you can tell your neighbor where you prefer traffic for which prefix.
+
+On the BGP prefix receiving side (and traffic sending side), the value for this attribute is only considered for best prefix selection between announcements from the same neighbor AS.
+
+If you do not want this and want to keep full control over your outgoing traffic, you can override the received MED with a value you select, but I recommend that, if you do this, you might talk to someone at your neighboring AS first (in peering, it's called peering \emph{partner} for a reason).
+
+In most implementations of BGP, there is a configuration parameter to change the behavior of the best path selection algorithm to ``always compare'' MED (even between two different AS neighbors). Using this is \emph{not recommended} unless you know exactly what you are doing. If you turn on ``always compare'', you \emph{must} override all received MED values. See chapter \ref{ch:trafficengineering} for a full explanation.
+
+MED is an optional attribute, so it can be missing. Normally, a router treats a missing MED as ``best'' - but this behavior can be changed by a configuration command to treat a missing MED as ``worst''.
+
+Outgoing, if you do not intend to use MED with a customer or upstream provider, it's best to simply set all MEDs to zero. This avoids being downrated if the other side has either \emph{always-compare-med} or \emph{missing-as-worst} configured.
+
+\subsection{eBGP vs. iBGP}
+\begin{tabular}{r p{\linewidth}}
+Value: & eBGP or iBGP\\
+Better: & eBGP wins \\
+Usually set: & by receiving router  \\
+\end{tabular}
+
+Not really an attribute but the source where the prefix was received from. The intention is to get rid of your traffic as quickly as you can, so if a prefix is received from an external and an internal BGP speaker, prefer the external one.
+
+\subsection{Network exit}
+\begin{tabular}{r p{\linewidth}}
+Value: & distance to exit (in terms of your \gls{IGP})\\
+Better: & nearest wins \\
+Usualy set: & by IGP  \\
+\end{tabular}
+
+Again not really an attribute, but rather a parameter the router calculates. If it receives two (or more) announcements of the same prefix via iBGP, it selects the one pointing to the nearest network exit. For this, the metric of the IGP is used.
+
+\subsection{Age of prefix announcement}
+\begin{tabular}{r p{\linewidth}}
+Value: & age of prefix announcements\\
+Better: & older wins \\
+Usually set: &  by router \\
+\end{tabular}
+
+This is one of the most tricky parameters for best prefix selection. It is only evaluated if:
+\begin{itemize}
+  \item All rules before did not select a best prefix announcement
+  \item Announcements compared are \emph{both external} (received via eBGP)
+\end{itemize}
+
+Usually, this rule is triggered when you receive a prefix from either two different peers or from two different upstream providers. One of them is ``best''. If this best prefix now disappears, another one becomes ``best''. If now the original best re-appears, the current one stays best as it is ``older'' than the now newly learned one.
+
+This rule usually only has a significant impact if two or more connections to different upstreams or exchange points are connected to the same router. Otherwise, if they are connected to two different routers, the prefix announcements are not external on both (one learns it from the other via iBGP) and so the rule does not apply.
+
+\subsection{Tie breakers: Router ID and neighbor IP}
+\begin{tabular}{r p{\linewidth}}
+Value: & IP address \\
+Better: & lower wins \\
+Usually set: &  sending router \\
+\end{tabular}
+
+Like stated above, the path selection algorithm \emph{must} select one and only one ``best'' announcement for each prefix. If the previous attribute comparisons still turn up a tie between two announcements, this last rule (or rather two last rules) make their decision based on the IP addresses of the BGP neighbor. First, the router-id is evaluated and if it is still a tie, the IP address of the BGP neighbor.
+
+These two rules are rarely applied - it is much more likely that the decision is made at an earlier stage.
+
+\section{Advanced topics}
+\subsection{Multipath}
+In a \emph{multipath} capable environment, BGP installs not only the best path but multiple paths to the same destination in the IP routing table for load sharing. Enabling BGP multi-path does not affect best path selection - one path is still the best one and advertised to eBGP and iBGP neighbors.
+
+Also, multiple paths are only installed if certain attributes match with the best path: Weight (Cisco), Local Preference, Origin, AS-path length, MED, Neighbor AS must match for eBGP multi-path.
+
+In some environments (like running BGP in a data center) it might be advisable to do a more relaxed BGP multipath consideration, like accepting two prefix announcements AS paths to the same prefix if \emph{not} everything is equal but simply the AS paths has the same length. In some BGP implementations you can configure this with a statement like in FRRouting \texttt{bgp bestpath as-path multipath-relax}.
+
+\subsection{Tweaking the algorithm}
+If you need this document to understand BGP and best path selection, do not do it.

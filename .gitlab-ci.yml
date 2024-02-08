@@ -1,0 +1,64 @@
+
+---
+variables:
+  # Feel free to choose the image that suits you best.
+  # blang/latex:latest ... Former image used in this template. No longer maintained by author.
+  # listx/texlive:2020 ... The default, referring to TexLive 2020. Current at least to 2021-02-02.
+
+  # Additional alternatives with high Docker pull counts:
+  # thomasweise/docker-texlive-full
+  # thomasweise/texlive
+  # adnrv/texlive
+  LATEX_IMAGE: texlive/texlive:latest
+  TEXFILE: "BGP_for_networks_who_peer"
+
+.tagsToPinExecutionToDECIXRunner: &EXECUTE_ON_DECIX_BUILD_RUNNER
+  tags:
+    - build
+    - runner
+
+stages:
+  - build
+  - publish
+
+build:
+  stage: build
+  image: $LATEX_IMAGE
+  # only:
+   #  changes:
+    #   - "*.tex"
+    #   - "*.bib"
+  tags:
+    - build
+    - runner
+  script:
+    - apt update && apt install -y libwww-perl
+    - make
+
+  artifacts:
+    name: "BGP-for-networks-who-peer"
+    public: true
+    expose_as: "BGP Book"
+    paths:
+      - "$TEXFILE-screen.pdf"
+      - "$TEXFILE-print.pdf"
+
+pages:
+  stage: publish
+  image: alpine:latest
+  only:
+    - master
+  tags:
+    - build
+    - runner
+  artifacts:
+    paths:
+      - public
+  script:
+    - apk add markdown
+    - |
+      mkdir -p .public; \
+        cp *.pdf .public 
+      markdown < README.md > .public/index.html
+    - mv .public public
+    

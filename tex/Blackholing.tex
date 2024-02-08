@@ -1,0 +1,115 @@
+%!TEX root = ../BGP_for_networks_who_peer.tex
+\section{Blackholing}
+Blackholing means that traffic to specific targets within the network operators infrastructure is blocked outside the network operators network.
+
+This chapter should give you an idea how you can implement a blackholing triggering infrastructure. First we talk about a mechanism which allows you to send blackhole requests to your upstream providers and peers, second we show how you can offer a blackhole service to your BGP customers.
+
+\subsection{Theory}
+If DOS or DDOS packets get dropped as early as possible, the target system is no longer reachable but there is no collateral damage or at least collateral damage is kept to a minimum. Goal is to drop packets outside the attacked network, or if this is not possible at the earliest possible stage within the attacked network.
+
+\subsection{Implementation}
+\subsubsection{Design Principles}
+Being under attack is stressful. So once you have determined the target of any attack and know which IP address(es) should be blackholed, only a single action should be necessary to start (and stop) the blackholing. Also some "success monitoring" should be possible.
+
+\subsubsection{Option 1: Use one of your existing routers for signaling}
+You need to have something in place already to import prefixes into BGP. The idea is to use the same mechanism to import prefixes to be blackholed into BGP. In general there are two ways importing prefixes into BGP in Cisco IOS:
+\begin{itemize}
+  \item using a network statement
+  \item using "redistribute" with a route-map for filtering
+\end{itemize}
+
+In case you are using network statements, you must also use a route-map to set the necessary parameters like the BLACKHOLE community and you need a corresponding route in your routers routing table.
+
+Configuration example for Cisco IOS:
+\begin{verbatim}
+ip route 192.0.2.1 255.255.255.255 Null0
+!
+route-map set-blackholing permit 1000
+  set community 65535:666 additive
+!
+router bgp 64500
+  network 192.0.2.1 mask 255.255.255.255 route-map set-blackholing
+\end{verbatim}
+
+The route-map can be pre-configured any time, but the network statement in BGP and the static ip route must both be entered to activate blackholing and both removed to disable it (actually it would be enough to remove one of the statements for deactivation, but after some time your router config would look very messy).
+
+If you redistribute static routes into BGP using some sort of filtering you can easily extend this to also accommodate blackholing. Again you need a static route in your routing table, here we also add tag statement to it:
+\begin{verbatim}
+ip route 192.0.2.1 255.255.255.255 Null0 tag 666
+!
+route-map static-to-bgp permit 1000
+  match tag 666
+  set community 65535:666 additive
+!
+! other rules for redistribution here
+!
+route-map static-to-bgp deny 65000
+!
+router bgp 64500
+ address-family ipv4 unicast
+  redistribute static route-map static-to-bgp
+\end{verbatim}
+Note that the route-map static-to-bgp is not complete, of course you also need statements to add regular (not to be blackholed) routes to BGP. Using a "tag" statement is very elegant as you only have to add one line of configuration to start blackholing.
+
+Without "tag" you can also achieve the same using an access-list or prefix-list, but then again you have to add/remove two lines of config, so this is possible but not really recommended.
+
+For IPv6 it works very similar:
+\begin{verbatim}
+ipv6 route 2001:DB8:0:1::1/128 Null0 tag 666
+!
+route-map static-to-bgp permit 1000
+  match tag 666
+  set community 65535:666 additive
+!
+route-map static-to-bgp deny 65000
+!
+router bgp 64500
+ address-family ipv6 unicast
+  redistribute static route-map static-to-bgp
+!
+\end{verbatim}
+
+All this requires that your router is still reachable and responsive during the attack. It is strongly recommended that you use some out-of-band connection to configure your router.
+
+\subsubsection{Option 2: Use a BGP Injector}
+You can also use a separate router with an iBGP session to inject blackholing prefixes. Or some software (like ExaBGP) on a server. On your router you would configure an iBGP session to a server with ExaBGP, on your server an example config file for ExaBGP looks like this:
+\begin{verbatim}
+  neighbor 192.168.2.13 {
+    router-id 192.168.2.14;
+    local-address 192.168.2.14;
+    local-as 64500;
+    peer-as 64500;
+
+    static {
+        route 10.1.1.1/32 {
+            community [ 65535:666 ];
+            next-hop 192.168.66.66;
+        }
+    }
+}
+\end{verbatim}
+
+\subsubsection{Option 3: Use a separate BGP speaker with your upstreams}
+To make this work you need a physically separate connection to your upstream providers and to your IXPs. Use either a BGP injector (like in option 2) or a router like in option 1 and either connect it on a separate physical circuit to your upstream provider or use \emph{eBGP multihop}, making sure the eBGP session will not be affected from any attack.
+
+\subsection{Operation}
+\subsubsection{Be prepared!}
+At least once every half year you should schedule an emergency exercise. How you do this depends on your organizational and network structure, but it should involve everyone in your operational departments who also would be involved in case of a real attack. You can have this scheduled and announced to your teams well beforehand (recommended for the first few exercises) or as a "surprise" (not recommended if you do not have a well trained team).
+
+All documentation on how to start blackholing and how to monitor it should be kept up to date (a good idea is to check after each emergency exercise if the documentation still matches reality) and should be easily accessible for your team. This might include keeping a printed version or a PDF document on your teams phones. Keep in mind attacks do also happen during the night and on weekends when your staff might not be in the office.
+
+Also you need to make sure that your management network (the network you use to configure your routers) is separate from your production network and is shielded from attacks. You have to be able to initiate the blackholing after the attack has started.
+
+\subsubsection{When under attack}
+Use your prepared plan to initiate blackholing. An example plan might read like this:
+\begin{enumerate}
+\item Find out what the target is. Sounds easy, but if multiple attacks happen at the same time, this might be challenging.
+\item Initiate blackholing of the targets IP address(es). This will:
+\begin{itemize}
+  \item sink the attack traffic within your network as early as possible
+  \item signal your upstream provider(s) and peers to blackhole at their side
+\end{itemize}
+\item Notify your customer! Let your customer know that he is under attack and that you have taken steps.
+\item Check if the blackholing is effective. Not all of your upstreams or peers might honor the blackholing request. Talk to your upstreams and peers who do not. If the attack is extremely severe and still hurting your network be prepared to shut down connections to parties which do still send you attack traffic. This should be only seen as a last measure. Talk to your peers. Everybody has experienced attacks and they might be able to help.
+\item Monitor the attack. If it subsides, stop blackholing (but be prepared to re-initiate it if the attack increases again).
+\end{enumerate}

@@ -1,0 +1,29 @@
+%!TEX root = ../BGP_for_networks_who_peer.tex
+\chapter{IPv6 and BGP}
+\section{Introduction}
+BGP is much older then IPv6. The first incarnation of BGP was described in \rfc{1105} in 1989 (building on experience with its predecessor protocol \gls{EGP}) - IPv6 was specified in \rfc{1883} in 1995.
+
+BGP4 (the still-current version) and predecessors were built for distributing IPv4 prefixes only. But unlike IP itself and other routing protocols like \gls{OSPF} BGP4 was designed with extensibility. So it was not necessary to introduce a new protocol, BGP4 was simply extended.
+
+And because nobody wanted to do this over and over again, the extension to BGP4 was not just to accommodate IPv6, but for multiple network protocols. This was published first in \rfc{2283} (but most current version of the extensions are in \rfc{4760}). The extension was backward compatible, so routers which had them could communicate with router which did not have them.
+
+\section{IPv6}
+It is beyond of the scope of this document to explain IPv6. In terms of BGP, the following points are important:
+\begin{itemize}
+  \item IPv6 addresses are 128 bits long
+  \item Globally announced prefixes are minimum /64s
+  \item All rules and best practices which valid for IPv4 are also valid for IPv6.
+  \item Only a small subset of the whole address space is assigned and used (see `bogon filtering' below).
+\end{itemize}
+
+Running IPv6 and IPv4 in parallel is done using the ``dual stack'' method: Both protocols run independent of each other. This is best practice.
+
+\section{Setting up an IGP and iBGP}
+Everything you have defined for IPv4 you need to set up for IPv6 as well.
+
+\subsection{Loopback interface}
+\subsection{Interconnect interfaces}
+\subsection{Using an IGP}
+\subsubsection{Using IS-IS}
+\subsubsection{Using OSPFv3}
+\subsection{Setting up iBGP}

@@ -1,0 +1,232 @@
+\glsresetall
+\newglossaryentry{Autonomous System}
+{
+  name=Autonomous System,
+  description={is a connected group of one or more IP prefixes run by one
+        or more network operators which has a SINGLE and CLEARLY DEFINED
+        routing policy}
+}
+\newacronym[shortplural=ASes]{AS}{AS}{Autonomous System}
+
+\newglossaryentry{Autonomous System Number}
+{
+  name=Autonomous System Number,
+  description={is a 32-bit number uniquely identifying an \gls{Autonomous System}}
+}
+\newacronym{ASN}{ASN}{Autonomous System Number}
+
+\newglossaryentry{AS Confederation}
+{
+  name=AS Confederation,
+  description={is according to \rfc{5065} a collection of autonomous systems represented and advertised as a single AS number to BGP speakers that are not members of the local BGP confederation.}
+}
+
+\newglossaryentry{AS Confederation Identifier}
+{
+  name=AS Confederation Identifier,
+  description={is according to \rfc{5065} an externally visible autonomous system number that identifies a BGP confederation as a whole.}
+}
+
+\newacronym{BFD}{BFD}{Bidirectional Forwarding Detection}
+\newglossaryentry{bfd}{
+name=Bidirectional Forwarding Detection,
+description={\glsreset{BFD}\gls{BFD} is a protocol to check if a configured neighbor is alive. For this packets are sent quite rapidly between two systems (rapidly means in the 100ms time range), if no packets are received from the neighbor for a given time, the neighbor is considered to be no longer reachable which is then signaled to other protocols like BGP. BFD is defined in \rfc{5880}, its application on IPv4 and IPv6 is defined in \rfc{5881}. \rfc{5882} is about the general application of BFD and \rfc{5883} describes BFD on multihop paths.}
+}
+
+
+\newacronym{BGP}{BGP}{Border Gateway Protocol}
+\newglossaryentry{Border Gateway Protocol}{
+  name = Border Gateway Protocol,
+  description = {is a distance vector routing protocol used to exchange
+  routing information between providers}
+}
+
+\newglossaryentry{BGP Attribute}{
+  name={BGP Path Attribute},
+  description={BGP update messages for prefixes contain not only the AS-Path but also other attributes. These fall into the following four categories:
+  \begin{description}
+    \item [well-known mandatory:] Needs to be understood by all BGP implementations and must be included in all prefix updates.
+    \item [well-known discretionary:] Needs to be understood by all BGP implementations but do not have to be there.
+    \item [optional transitive:] Do not have to be there, do not have to be understood by all implementations, but \emph{stay} on the prefix and are forwarded to other BGP speakers (even if not understood)
+    \item [optional non-transitive:] Similar, but is not passed along to other BGP speakers
+  \end{description}
+  }
+}
+
+\newacronym{EIGRP}{EIGRP}{Enhanced Interior Gateway Routing Protocol}
+\newglossaryentry{Enhanced Interior Gateway Routing Protocol} {
+  name =  Enhanced Interior Gateway Routing Protocol,
+  description = { is a \gls{IGP} defined by Cisco in the 1980s to distribute
+  routing information within a network. It was later openly specified in
+  \cite{rfc7868}}
+}
+
+\newglossaryentry{default free zone}{
+  name = Default Free Zone,
+  description = {Part of the Internet where no default route is needed for routing but all routers know all prefixes}
+}
+
+\newacronym{EGP}{EGP}{Exterior Gateway Protocol}
+\newglossaryentry{Exterior Gateway Protocol}{
+  name=Exterior Gateway Protocol,
+  description={was a predecessor to BGP. First defined 1982 in \rfc{827} it became obsolete once BGP was widely used (around 1994)}
+}
+
+\newglossaryentry{global routing table}{
+name = Global Routing Table,
+description= {is the table in a router which contains all prefixes currently being routed in the \gls{default free zone} of the Internet}
+}
+
+\newacronym{IANA}{IANA}{Internet Assigned Numbers Authority}
+\newglossaryentry{Internet Assigned Numbers Authority}{
+  name = Internet Assigned Numbers Authority,
+  description = {is an entity responsible for all number resources in the Internet. This includes addresses, protocol identifiers, and more}
+}
+
+\newacronym{ietf}{IETF}{Internet Engineering Task Force}
+
+\newacronym{IGP}{IGP}{Interior Gateway Protocol}
+\newglossaryentry{Interior Gateway Protocol}{
+  name = Interior Gateway Protocol,
+  description = {is a protocol running inside an Autonomous System to
+  distribute the IP addresses of router interfaces}
+}
+
+\newacronym{IP}{IP}{Internet Protocol}
+\newglossaryentry{Internet Protocol}{
+  name={Internet Protocol},
+  description={is a protocol responsible for end-to-end communication on the Internet. 
+  There are currently two versions in use, named \gls{IPv4} and  \gls{IPv6}
+  }}
+
+\newacronym[]{IPv4}{IPv4}{Internet Protocol Version 4}
+\newacronym[]{IPv6}{IPv6}{Internet Protocol Version 6}
+
+\newglossaryentry{IS-IS}{
+  name = IS-IS,
+  description = {(Intermediate System to Intermediate System) is an \gls{IGP} running directly on top of layer 2. It is used
+  to distribute interface addresses within a network}
+}
+
+\newacronym{LIR}{LIR}{Local Internet Registry}
+\newglossaryentry{Local Internet Registry} {
+  name = Local Internet Registry,
+  plural = Local Internet Registries,
+  description = {is an organzation/company which receives IP address resources
+  or Autonomous System Numbers as an allocation from a Regional Internet Registry and assigns these
+  resources to end users}
+}
+
+\newglossaryentry{OSPF}{
+  name=Open Shortest Path First,
+  description={ is a link state routing protocol. It is used as an \gls{IGP}}
+}
+
+
+\newacronym[longplural={Regional Internet Registries}]{RIR}{RIR}{Regional Internet Registry}
+\newglossaryentry{Regional Internet Registry} {
+  name=Regional Internet Registry,
+  plural=Regional Internet Registries,
+  description={is an entity responsible for allocating IP addresses and AS numbers to
+    Internet Providers}
+}
+
+\newacronym[longplural={Requests for Comment}]{rfc}{RFC}{Request for Comments}
+
+
+\newacronym{RIP}{RIP}{Routing Information Protocol}
+\newglossaryentry{Routing Information Protocol}{
+  name=Routing Information Protocol,
+  description={is an old and quite obsolete protocol which was used to
+  distribute routing information. RIP is no longer in use}
+}
+
+\newglossaryentry{RIPE}{
+  name = RIPE,
+  description = {short for \emph{Réseaux IP Européens}, is the community of network operators in the European, Russian, and Middle Eastern region. See also \gls{RIPE NCC}}
+}
+
+\newglossaryentry{RIPE NCC}{
+  name = RIPE NCC,
+  description = {is the \glsreset{RIR}\gls{RIR} for the European, Russian, and Middle Eastern region}
+}
+
+\newglossaryentry{Route Reflector}{
+  name=Route Reflector,
+  description={is an iBGP speaker which sends \emph{all} prefixes it receives out to its \glspl{Route Reflector Client}}
+}
+
+\newglossaryentry{Route Reflector Client}{
+  name=Route Reflector Client,
+  description={is an iBGP speaking node with usually only one iBGP connection to a \gls{Route Reflector}},
+  plural=Route Reflector Clients
+}
+
+\newacronym{RTT}{RTT}{Round Trip Time}
+\newglossaryentry{Round Trip Time}{name={Round Trip Time},description={is the time measured in seconds or milliseconds it takes from sending out a packet until receiving a reply.}}
+
+\newacronym{TCP}{TCP}{Transmission Control Protocol}
+\newglossaryentry{Transmission Control Protocol}{
+  name=TCP,
+  description={is part of the TCP/IP protocol stack. It is a connection oriented protocol taking care that everything which is sent is also received}
+}
+
+\newglossaryentry{MD5}{
+name=MD5,
+description={is a hash algorithm, used to generate a checksum on given data}
+}
+
+\newacronym{TTL}{TTL}{\gls{Time To Live}}
+\newglossaryentry{Time To Live}{
+name=Time To Live,
+description={is a counter in the \gls{IP} header which is decreased every time a packet is forwarded by a router. If this counter hits zero, the packet is discarded and an \gls{ICMP} Time Exceeded message is sent back to the originator of the packet}
+}
+
+\newglossaryentry{default-route}{
+name=Default Route,
+description={is a route which covers every destination for which there is no specific route in the routing table. The destination of the default-route is often called the default destination or the gateway of last resort}
+}
+
+\newglossaryentry{blackholing}{
+name=Blackholing,
+description={is a method to discard unwanted or malicious traffic. Instead of forwarding unwanted packets to their destination, they are discarded as early as possible}
+}
+
+\newglossaryentry{ICMP}{
+name=ICMP,
+description={Internet Control Message Protocol - this protocol is used to signal errors when forwarding packets}
+}
+
+\newglossaryentry{med}{
+name=Multi Exit Discriminator,
+description={is a metric in BGP which is used to your neighbor where you prefer traffic for a prefix}
+}
+\newacronym{MED}{MED}{Multi Exit Discriminator}
+
+\newglossaryentry{LP}{
+name=Local Preference,
+description={is the first evaluated \gls{BGP Attribute} in best path selection. It is an integer value, where a higher value is ``better''. It is redistributed via iBGP inside an Autonomous System}
+}
+
+\newacronym{ROA}{ROA}{Route Origin Authorization}
+\newglossaryentry{roa}{
+name=ROA,
+description={Route Origin Authorization - a cryptographically signed record which defines how a prefix can be announced, it defines the originating \gls{Autonomous System} and the maximum prefix length}
+}
+
+\newglossaryentry{RPKI}{
+name=RPKI,
+description={Resource Public Key Infrastructure is a framework of certificates and \glspl{roa} which enables resource holders to cryptographically prove that a resource is theirs and to define how it can be announced via BGP}
+}
+
+\newglossaryentry{RPKI validator}{
+name=RPKI validator,
+description={is a piece of software which fetches \gls{RPKI} certificates and \glspl{ROA} from  \glspl{RIR}, checks the signatures of the certificates and ROAs and communicates with routers providing a list of certified prefixes and their allowed originating AS numbers.}
+}
+
+
+\newacronym{DDOS}{DDOS}{Distributed Denial of Service attack}
+\newglossaryentry{ddos}{
+name=DDOS,
+description={\glsreset{DDOS}\gls{DDOS} is an attack against a system via the Internet. The attacker uses multiple (sometimes millions of) network sources to send more traffic towards the attacked system than it can handle. Collateral damage is quite often the network infrastructure to which the attacked system is connected to.}
+}
