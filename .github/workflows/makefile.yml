@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - v2024-**
+  workflow_dispatch:
+  
 
 permissions:
   contents: write
