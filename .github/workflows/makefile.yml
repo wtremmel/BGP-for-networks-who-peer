@@ -12,6 +12,9 @@ jobs:
     steps:
       - name: Setup Git repository
         uses: actions/checkout@v4
+      - name: Setup Perl
+        uses: shogo82148/actions-setup-perl@v1
+      - run: get-referenced-rfcs > all-rfcs.bib
       - name: Compile Latex Document
         uses: xu-cheng/latex-action@v3
         with:
