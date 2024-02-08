@@ -18,11 +18,7 @@ jobs:
         uses: shogo82148/actions-setup-perl@v1
         with:
           install-modules: "LWP::UserAgent"
-      - run: perl get-referenced-rfcs > all-rfcs.bib
-      - name: upload rfc file
-        uses: actions/upload-artifact@v4
-        with:
-          path: all-rfcs.bib
+      - run: cat *.tex tex/*.tex | perl get-referenced-rfcs > all-rfcs.bib
       - name: Compile Latex Document
         uses: xu-cheng/latex-action@v3
         with:
