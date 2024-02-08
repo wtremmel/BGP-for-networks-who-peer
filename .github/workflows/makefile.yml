@@ -2,7 +2,6 @@ name: Build Latex Document
 
 on:
   push:
-    branches: [ "main" ]
     tags:
       - v2024-**
 
