@@ -7,17 +7,12 @@ classroom training I was putting together.
 
 The book is still (and perhaps always will be) in draft state.
 
-The LaTex source code is not (yet?) public.
-
 If you are interested in more resources like my online training videos, just visit [our website](https://de-cix.net/academy) 
 
 
 ## About this repository
 
-The repository contains two files: 
-
-- [For reading with any PDF reader on screen](BGP_for_networks_who_peer-screen.pdf)
-- [For printing on paper](BGP_for_networks_who_peer-print.pdf)
+The repository contains a PDF for on-screen reading with a PDF reader. You also can create a version optimized for printing, just download the sources and run `make print`.
 
 Difference is formatting and typesetting.
 
