@@ -167,7 +167,7 @@ This has the additional advantage that you can add even more prefixes to it that
 And for IPv6:
 \begin{verbatim}
   ipv6 prefix-list ipv6-unwanted permit ::/0 ge 49 le 128
-  ipv6 prefix-list ipv6-unwanted permit ::/0 ge 0 le 18
+  ipv6 prefix-list ipv6-unwanted permit ::/0 ge 0 le 16
   !
   route-map upstream-in deny 45
     match ipv6 address prefix-list ipv6-unwanted
