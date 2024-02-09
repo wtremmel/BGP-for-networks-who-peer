@@ -22,3 +22,5 @@ all-rfcs.bib
 *.gz
 *.toc
 *.xwm
+*.code-workspace
+
