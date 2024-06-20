@@ -59,8 +59,10 @@
 \usepackage{tabu}
 \usepackage{float}
 \usepackage{eso-pic}
-\usepackage{datetime}
-\newdateformat{monthyear}{\monthname~\THEYEAR}
+\usepackage{datetime2}
+\DTMusemodule{english}{en-GB}
+% \newdateformat{monthyear}{\monthname~\THEYEAR}
+\DTMsavenow{heute}
 \usepackage{csquotes}
 \usepackage{fancyhdr}
 \usepackage{xcolor}
@@ -111,7 +113,7 @@
 \mbox{\fontsize{1.3cm}{1.4cm}\selectfont {\bfseries\itshape BGP for networks who peer}}\\
 \vspace*{1cm}
 \hspace*{0.5cm}
-\mbox{\fontsize{0.7cm}{0.8cm}\selectfont {\bfseries\itshape Wolfgang Tremmel, DE-CIX Academy, \monthyear\today  }}
+\mbox{\fontsize{0.7cm}{0.8cm}\selectfont {\bfseries\itshape Wolfgang Tremmel, DE-CIX Academy, \DTMenglishmonthname{\DTMfetchmonth{heute}} \DTMfetchyear{heute} }}
 \end{titlepage}
 
 \tableofcontents
