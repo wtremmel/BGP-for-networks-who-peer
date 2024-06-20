@@ -293,6 +293,9 @@ But how do these different protocols act together in a router? Please see figure
   \item[BGP Prefix Table] contains all received prefixes from all BGP neighbors. After the BGP process has done its \emph{best prefix selection}, \textbf{one} of these routes is installed in the routing table.
 \end{description}
 
+\section{Examples in this book}
+Some sections contain configuration examples for a number of routers. As the document is (and perhaps always will be) in draft state these examples are incomplete. All examples have been tested for syntactical correctness, but are limited to routers available (real or in simulation) to the author. Pull requests with examples for additional routers are welcome.
+
 \section{BGP and IPv6}
 Usually BGP training programs and manuals have their own chapter about IPv6. But as it is now \DTMfetchyear{heute} and IPv6 should be quite common, all information about how to implement IPv6 routing is directly integrated. You should not setup BGP for IPv4 first and add IPv6 capabilities later - best practice is to integrate IPv6 from the beginning.
 
