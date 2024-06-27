@@ -35,7 +35,9 @@ Extended communities were never really liked by the operators - too confusing an
 \section{Large communities}
 ``Large communities'' fix the shortcomings of extended communities. Defined in \cite{rfc8092}, they go back to the simplistic approach of the original communities: Three simple 32-bit values. The first 32-bit number is defined as the ``Global Administrator'' - an AS number (32bit!) giving meaning to the two remaining numbers. These two can be seen as simply two values or as one function number plus one numerical parameter.
 
-The notation is three numbers separated by colons (":"). As large communities are pretty new (defined in 2017), they are not yet implemented in a lot of routers. Implementation status is being tracked at \url{http://largebgpcommunities.net/implementations/}.
+The notation is three numbers separated by colons (``:''). As large communities are kind of new (defined in 2017), you need quite recent software versions for your router. Implementation status is being tracked at \url{http://largebgpcommunities.net/implementations/}, there you also can see the minimum sofware you need for most implementations.
+
+Mind that \em{Juniper} routers notate large communities like ``large:global administrator:value1:value2'' - so you have to prefix them with ``large:'' otherwise the router reports a syntax error.
 
 Figure \ref{fig:communities} shows all three community types.
 
