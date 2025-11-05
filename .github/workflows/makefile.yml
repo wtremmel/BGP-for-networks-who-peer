@@ -3,7 +3,8 @@ name: Build Latex Document
 on:
   push:
     tags:
-      - v2024-**
+      - v2025-**
+      - v2026-**
   workflow_dispatch:
   
 
