@@ -63,7 +63,7 @@ AS path length comes into effect when \gls{LP} is equal, usually when having two
 \begin{tabular}{r p{\linewidth}}
 Value: & IGP, EGP, incomplete\\
 Better: & IGP over EGP over incomplete \\
-Usualy set: & automatically when injecting prefixes into BGP \\
+Usualy set: & automatically when injecting prefixes into BGP by originating AS\\
 Mandatory attribute \\
 \end{tabular}
 
@@ -74,7 +74,9 @@ This is a ``historical'' attribute with little to no practical value today. Its 
   \item[incomplete] - the prefix was redistributed from another routing protocol (including a static route) into BGP.
 \end{description}
 
-Be aware that the value of this attribute can be overwritten by any BGP speaking router. Some ISPs prefer to overwrite the attribute on all incoming connections.
+Be aware that the value of this attribute can be overwritten by any BGP speaking router. At RIPE91 James Bensley presented that some transit providers change Origin Type on purpose to attract more traffic\cite{ripe91jborigin}.
+
+Therefore if you are a stub-AS (having no other ASes as customers) you might consider rewriting Origin Type on all received prefixes to \emph{IGP}.
 
 
 \subsection{\acrfull{MED}}
